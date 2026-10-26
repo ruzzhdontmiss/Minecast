@@ -5,6 +5,7 @@
   "scripts": {
     "dev:frontend": "cd minecast-frontend && npm run dev",
     "dev:backend": "cd minecast-backend && source .venv/bin/activate && uvicorn main:app --reload --port 8000",
+    "build": "cd minecast-frontend && npm install && npm run build",
     "build:frontend": "cd minecast-frontend && npm run build",
     "test:contracts": "cd minecast-contracts && npx hardhat test",
     "deploy:contracts:local": "cd minecast-contracts && npx hardhat run scripts/deploy.js",

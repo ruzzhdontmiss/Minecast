@@ -1,0 +1,4 @@
+{
+  "buildCommand": "cd minecast-frontend && npm install && npm run build",
+  "outputDirectory": "minecast-frontend/out"
+}
