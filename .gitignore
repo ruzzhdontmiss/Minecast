@@ -13,3 +13,5 @@ __pycache__/
 *.pyc
 minecast-contracts/cache/
 minecast-contracts/artifacts/build-info/
+.vercel
+.env*.local
