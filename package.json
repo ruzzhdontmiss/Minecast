@@ -1,0 +1,24 @@
+{
+  "name": "minecast",
+  "version": "1.0.0",
+  "description": "MineCast - AI-Powered Web3 Video Platform for Originality Detection & Watch-to-Earn",
+  "scripts": {
+    "dev:frontend": "cd minecast-frontend && npm run dev",
+    "dev:backend": "cd minecast-backend && source .venv/bin/activate && uvicorn main:app --reload --port 8000",
+    "build:frontend": "cd minecast-frontend && npm run build",
+    "test:contracts": "cd minecast-contracts && npx hardhat test",
+    "deploy:contracts:local": "cd minecast-contracts && npx hardhat run scripts/deploy.js",
+    "deploy:contracts:amoy": "cd minecast-contracts && npx hardhat run scripts/deploy.js --network amoy"
+  },
+  "keywords": [
+    "web3",
+    "fastapi",
+    "nextjs",
+    "clip",
+    "faiss",
+    "solidity",
+    "polygon"
+  ],
+  "author": "ruzzhx",
+  "license": "MIT"
+}

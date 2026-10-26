@@ -37,12 +37,26 @@ describe("MineCast Contracts", function () {
     });
 
     describe("RareVideoNFT", function () {
-        it("Should mint a video NFT with rarity score", async function () {
+        it("Should allow owner to mint on behalf of user", async function () {
             const tx = await rareVideoNFT.mintVideo(user.address, "ipfs://test-uri", 95);
             await tx.wait();
 
             expect(await rareVideoNFT.ownerOf(0)).to.equal(user.address);
             expect(await rareVideoNFT.tokenURI(0)).to.equal("ipfs://test-uri");
+        });
+
+        it("Should allow user to mint to themselves directly", async function () {
+            const tx = await rareVideoNFT.connect(user).mintVideo(user.address, "ipfs://user-clip", 88);
+            await tx.wait();
+
+            expect(await rareVideoNFT.ownerOf(0)).to.equal(user.address);
+            expect(await rareVideoNFT.tokenURI(0)).to.equal("ipfs://user-clip");
+        });
+
+        it("Should prevent user from minting to another address", async function () {
+            await expect(
+                rareVideoNFT.connect(user).mintVideo(otherAccount.address, "ipfs://fake", 50)
+            ).to.be.revertedWith("Unauthorized minter");
         });
     });
 

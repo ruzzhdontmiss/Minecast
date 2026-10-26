@@ -11,7 +11,8 @@ contract RareVideoNFT is ERC721URIStorage, Ownable {
 
     constructor() ERC721("MineCast Rare Video", "MCRV") Ownable(msg.sender) {}
 
-    function mintVideo(address to, string memory uri, uint256 rarityScore) public onlyOwner returns (uint256) {
+    function mintVideo(address to, string memory uri, uint256 rarityScore) public returns (uint256) {
+        require(to == msg.sender || msg.sender == owner(), "Unauthorized minter");
         uint256 tokenId = _nextTokenId++;
         _mint(to, tokenId);
         _setTokenURI(tokenId, uri);

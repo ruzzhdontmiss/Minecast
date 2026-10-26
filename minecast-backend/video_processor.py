@@ -1,4 +1,7 @@
 # video_processor.py
+import os
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+os.environ["OMP_NUM_THREADS"] = "1"
 
 import cv2
 import librosa
@@ -6,7 +9,6 @@ import numpy as np
 import torch
 from PIL import Image
 from transformers import CLIPProcessor, CLIPModel
-import os
 
 # --- DISABLE TENSORFLOW/YAMNET ---
 # import tensorflow as tf
@@ -106,6 +108,23 @@ def get_audio_from_video(video_bytes: bytes):
         if os.path.exists(TEMP_AUDIO_FILE):
             os.remove(TEMP_AUDIO_FILE)
 
+import io
+
+def get_frames_from_media(media_bytes: bytes):
+    """
+    Extracts visual frames from either a static photo (JPEG, PNG, WEBP) or a video (MP4, MOV, WEBM).
+    """
+    # 1. Check if media is an image/photo
+    try:
+        image = Image.open(io.BytesIO(media_bytes))
+        image = image.convert("RGB")
+        return [image]
+    except Exception:
+        pass
+
+    # 2. Extract frames from video
+    return get_frames_from_video(media_bytes)
+
 def get_visual_embedding(frames: list):
     if not frames:
         return np.zeros(512)
@@ -115,30 +134,14 @@ def get_visual_embedding(frames: list):
         avg_features = torch.mean(image_features, dim=0)
         return avg_features.numpy().flatten()
 
-# --- This function is no longer called ---
-def get_audio_embedding(waveform: np.ndarray):
-    return np.zeros(1024) # Return a dummy array
-
-def get_combined_embedding(video_bytes: bytes):
+def get_combined_embedding(media_bytes: bytes):
     """
-    The main function to get a VISUAL-ONLY embedding for a video.
+    Returns a normalized 512-dimensional CLIP embedding for any photo or video clip.
     """
-    # 1. Process Video
-    frames = get_frames_from_video(video_bytes)
+    frames = get_frames_from_media(media_bytes)
     visual_emb = get_visual_embedding(frames)
-    
-    # --- DISABLE AUDIO ---
-    # 2. Process Audio
-    # waveform, _ = get_audio_from_video(video_bytes)
-    # audio_emb = get_audio_embedding(waveform)
-    # ---------------------
-    
-    # --- CHANGED EMBEDDING ---
-    # 3. Combine them (Now just visual)
     combined_emb = visual_emb.astype('float32')
-    # -------------------------
     
-    # 4. Normalize
     norm = np.linalg.norm(combined_emb)
     if norm == 0:
         return combined_emb

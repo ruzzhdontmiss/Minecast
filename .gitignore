@@ -7,3 +7,9 @@ dist/
 build/
 coverage/
 *.log
+backups/
+*.tar.gz
+__pycache__/
+*.pyc
+minecast-contracts/cache/
+minecast-contracts/artifacts/build-info/

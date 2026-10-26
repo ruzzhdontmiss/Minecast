@@ -1,4 +1,7 @@
 import os
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+os.environ["OMP_NUM_THREADS"] = "1"
+
 import faiss
 import numpy as np
 import shutil
@@ -78,7 +81,7 @@ class AIEngine:
 
         # 1. Generate Embedding
         embedding = get_combined_embedding(video_bytes)
-        embedding_2d = np.array([embedding]).astype('float32')
+        embedding_2d = np.ascontiguousarray([embedding], dtype=np.float32)
         faiss.normalize_L2(embedding_2d)
 
         # 2. Add to Index
@@ -96,17 +99,7 @@ class AIEngine:
 
         # 1. Generate Embedding
         embedding = get_combined_embedding(video_bytes)
-        embedding_2d = np.array([embedding]).astype('float32')
-        # Note: No normalization needed for search query in IndexFlatIP if vectors were normalized on add? 
-        # Actually Inner Product usually requires normalization for Cosine Similarity equivalent.
-        # video_processor.py's get_combined_embedding returns a vector. 
-        # main.py didn't normalize query. Let's check consistency.
-        # If we use normalize_L2 on add, we SHOULD normalize query for Cosine Similarity.
-        # For safety/consistency with previous main.py (which didn't normalize add explicitly but video_processor might have?), 
-        # let's look at previous main.py logic.
-        # Previous main.py L186: faiss.normalize_L2(embedding_2d) ON ADD.
-        # Previous main.py L95: NO normalize on query. This might be a subtle bug or assumed pre-normalized.
-        # To be safe and correct for Cosine Similarity:
+        embedding_2d = np.ascontiguousarray([embedding], dtype=np.float32)
         faiss.normalize_L2(embedding_2d)
 
         D, I = self.index.search(embedding_2d, k)

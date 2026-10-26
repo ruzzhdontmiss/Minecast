@@ -12,6 +12,7 @@ interface VideoPlayerProps {
 
 const VideoPlayer: React.FC<VideoPlayerProps> = ({ video }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const { address: wagmiAddress } = useAccount();
   const address = wagmiAddress || "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"; // Hardhat Account 0 for Demo
@@ -27,6 +28,10 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video }) => {
 
   // DB uses 'url', MOCK used 'src'
   const videoSrc = video.url || video.src;
+  const isImage = typeof videoSrc === 'string' && (
+    videoSrc.match(/\.(jpeg|jpg|png|webp|gif)($|\?)/i) || 
+    videoSrc.startsWith('data:image/')
+  );
 
   // Prefer creator's username, fallback to title
   const displayTitle = video.profiles?.username 
@@ -53,16 +58,18 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video }) => {
       
       const { signature } = response.data;
       if (signature) {
-        // Store signature in localStorage so WalletDrawer can pick it up
+        // Store signature in localStorage so WalletDrawer and WalletPage can pick it up
         const pendingRewardsStr = localStorage.getItem('minecast_pending_rewards') || '[]';
         const pendingRewards = JSON.parse(pendingRewardsStr);
-        pendingRewards.push({
-          videoId: videoIdStr,
-          signature: signature,
-          amount: 10 // Assuming 10 MT per view
-        });
-        localStorage.setItem('minecast_pending_rewards', JSON.stringify(pendingRewards));
-        console.log("Reward signature saved to local storage!");
+        if (!pendingRewards.some((r: any) => r.videoId === videoIdStr)) {
+          pendingRewards.push({
+            videoId: videoIdStr,
+            signature: signature,
+            amount: 10 // 10 MT per view
+          });
+          localStorage.setItem('minecast_pending_rewards', JSON.stringify(pendingRewards));
+          console.log("Reward signature saved to local storage!");
+        }
       }
     } catch (error) {
       console.error("Failed to claim watch reward:", error);
@@ -96,14 +103,14 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video }) => {
     const handleIntersection = (entries: IntersectionObserverEntry[]) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
+          setIsPlaying(true);
           if (videoRef.current) {
             videoRef.current.play().catch(error => console.log("Autoplay prevented:", error));
-            setIsPlaying(true);
           }
         } else {
+          setIsPlaying(false);
           if (videoRef.current) {
             videoRef.current.pause();
-            setIsPlaying(false);
           }
         }
       });
@@ -111,18 +118,19 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video }) => {
 
     const observer = new IntersectionObserver(handleIntersection, options);
 
-    if (videoRef.current) {
-      observer.observe(videoRef.current);
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
     }
 
     return () => {
-      if (videoRef.current) {
-        observer.unobserve(videoRef.current);
+      if (containerRef.current) {
+        observer.unobserve(containerRef.current);
       }
     };
   }, []);
 
   const togglePlay = () => {
+    if (isImage) return; // Images don't pause/play
     if (videoRef.current) {
       if (isPlaying) {
         videoRef.current.pause();
@@ -135,19 +143,27 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video }) => {
   };
 
   return (
-    <div className="relative h-screen w-full snap-start bg-black">
-      <video
-        ref={videoRef}
-        src={videoSrc}
-        loop
-        muted
-        playsInline
-        onClick={togglePlay}
-        className="h-full w-full object-cover cursor-pointer"
-      />
+    <div ref={containerRef} className="relative h-screen w-full snap-start bg-black flex items-center justify-center">
+      {isImage ? (
+        <img
+          src={videoSrc}
+          alt={displayTitle}
+          className="h-full w-full object-contain bg-black"
+        />
+      ) : (
+        <video
+          ref={videoRef}
+          src={videoSrc}
+          loop
+          muted
+          playsInline
+          onClick={togglePlay}
+          className="h-full w-full object-cover cursor-pointer"
+        />
+      )}
 
       {/* Play/Pause Indicator Overlay */}
-      {!isPlaying && (
+      {!isPlaying && !isImage && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
           <div className="bg-black/40 rounded-full p-4 backdrop-blur-sm">
              <svg className="w-12 h-12 text-white opacity-90 pl-1" fill="currentColor" viewBox="0 0 20 20">

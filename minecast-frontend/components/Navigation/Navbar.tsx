@@ -13,6 +13,7 @@ import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 const Navigation = () => {
   const { isAuthenticated, profile, signOut, loading } = useAuth();
+  const { openWallet } = useWallet();
 
   // Get display name: username or email or fallback
   const displayName = profile?.username || profile?.email?.split('@')[0] || 'User';
@@ -31,9 +32,13 @@ const Navigation = () => {
               <Link href="/upload" className="text-sm font-medium text-gray-400 hover:text-white transition-colors">
                 Upload
               </Link>
-              <Link href="/wallet" className="text-sm font-medium text-gray-400 hover:text-white transition-colors">
+              <button 
+                type="button"
+                onClick={openWallet}
+                className="text-sm font-medium text-gray-400 hover:text-white transition-colors"
+              >
                 Wallet
-              </Link>
+              </button>
             </div>
           </div>
 
@@ -90,11 +95,14 @@ const Navigation = () => {
           </Link>
 
           {/* Wallet Button - Opens Drawer */}
-          {/* Wallet Link */}
-          <Link href="/wallet" className="flex flex-col items-center text-green-400 hover:text-green-300 transition-colors">
+          <button 
+            type="button"
+            onClick={openWallet}
+            className="flex flex-col items-center text-green-400 hover:text-green-300 transition-colors"
+          >
             <WalletIcon className="h-6 w-6" />
             <span className="text-xs font-bold">Wallet</span>
-          </Link>
+          </button>
 
           {/* Link to Upload Page */}
           <Link href="/upload" className="flex flex-col items-center text-gray-400 hover:text-white">

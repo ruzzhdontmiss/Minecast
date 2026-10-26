@@ -1,0 +1,7 @@
+# Lightweight requirements for free-tier hosting (e.g. Render Free Tier with 512MB RAM cap)
+# Note: The backend will automatically run in fallback hash-based originality mode
+fastapi>=0.115.0
+uvicorn>=0.30.0
+python-multipart>=0.0.9
+python-dotenv>=1.0.0
+web3>=6.0.0
