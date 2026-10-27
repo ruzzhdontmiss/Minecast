@@ -2,3 +2,4 @@ video1.mp4
 video3.mp4
 video2.mp4
 my_cool_photo.jpg
+video4.mp4
